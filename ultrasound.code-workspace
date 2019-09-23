@@ -1,10 +1,13 @@
 {
 	"folders": [
 		{
-			"path": "Receiver"
+			"path": "./Receiver"
 		},
 		{
-			"path": "Transmitter"
+			"path": "./Transmitter"
+		},
+		{
+			"path": "./Common"
 		}
 	],
 	"settings": {}

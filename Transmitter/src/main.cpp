@@ -4,12 +4,12 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <TBeamPower.h>
+#include "TinyGPS.h"
 #include "main.h"
 
 TBeamPower power(BUSPWR, BATTERY_PIN,PWRSDA,PWRSCL);
-
-double GetDistance();
-void SendLora(double distance);
+TinyGPSPlus gps;                            
+struct SensorConfig config;
 
 void setup() {
   // Begin Serial communication at a baudrate of 9600:
@@ -18,18 +18,41 @@ void setup() {
   power.begin();
   power.power_sensors(false);
   power.power_peripherals(false);
-  
-  float currentVoltage = power.get_battery_voltage();
+
+  startLoRa();
+  startGPS();
 }
 
 void loop() {
-  double distance = GetDistance();
+  SensorReport report;
+  
+  MakeDataPacket(report);
+  SendLora(report);
 
-  SendLora(distance);
+  smartDelay(1000);
+}
 
-  Serial.printf("Distance = %f cm\n", distance);
+void MakeDataPacket(SensorReport report)
+{
+  uint8_t chipid[6];
+  esp_efuse_read_mac(chipid);
+  char *stime = asctime(gmtime(&report.time));
+  stime[24]='\0';
 
-  delay(500);
+  report.distance = GetDistance();
+  report.volts = power.getBatteryVoltage();
+
+  struct tm curtime;
+  curtime.tm_sec = gps.time.second();
+  curtime.tm_min=gps.time.minute();
+  curtime.tm_hour= gps.time.hour();
+  curtime.tm_mday= gps.date.day();
+  curtime.tm_mon= gps.date.month()-1;
+  curtime.tm_year= gps.date.year()-1900;
+  curtime.tm_isdst=false;
+
+  Serial.printf("%s %f/%f alt=%f sats=%d hdop=%d dis=%f v=%f\n",
+  stime, report.lat, report.lng ,report.alt , +report.sats , +report.hdop ,report.distance, report.volts );
 }
 
 double GetDistance() {
@@ -48,33 +71,104 @@ double GetDistance() {
   return duration / 58.0;
 }
 
-void SendLora(double distance) {
-  static int counter = 0;
+void stopLoRa()
+{
+  LoRa.sleep();
+  LoRa.end();
+  power.power_LoRa(false);
+}
 
+void startLoRa() {
   power.power_LoRa(true);
+  Serial.printf("Starting Lora: freq:%lu enableCRC:%d coderate:%d spread:%d bandwidth:%lu txpower:%d\n", config.frequency, config.enableCRC, config.codingRate, config.spreadFactor, config.bandwidth, config.txpower);
+
   SPI.begin(SCK,MISO,MOSI,SS);
   LoRa.setPins(SS,RST,DI0);
-  if (!LoRa.begin(LORA_BAND * 1E6)) {
-    Serial.println("Starting LoRa failed!");
-    while (1);
-  }
-  // send packet
+
+  int result = LoRa.begin(config.frequency);
+  if (!result) 
+    Serial.printf("Starting LoRa failed: err %d\n", result);
+  else
+    Serial.println("Started LoRa OK");
+
+  LoRa.setPreambleLength(config.preamble);
+  LoRa.setSyncWord(config.syncword);    
+  LoRa.setSignalBandwidth(config.bandwidth);
+  LoRa.setSpreadingFactor(config.spreadFactor);
+  LoRa.setCodingRate4(config.codingRate);
+  if (config.enableCRC)
+      LoRa.enableCrc();
+    else 
+      LoRa.disableCrc();
+
+  LoRa.setTxPower(config.txpower);
+  LoRa.idle();
+  
+  if (!result) {
+    Serial.printf("Starting LoRa failed: err %d", result);
+  }  
+}
+
+void SendLora( SensorReport report ) {
+  power.led_onoff(true);
   LoRa.beginPacket();
-  uint8_t chipid[6];
-  esp_efuse_read_mac(chipid);
-  // LoRa.printf("%02x%02x%02x%02x%02x%02x %.1f cm\n",chipid[0], chipid[1], chipid[2], chipid[3], chipid[4], chipid[5], distance);
-  LoRa.printf("%02x%02x%02x%02x %.1f cm\n",chipid[2], chipid[3], chipid[4], chipid[5], distance);
+  LoRa.write( (const uint8_t *)&report, sizeof(SensorReport));
   LoRa.endPacket();
+  power.led_onoff(false);
+}
 
-  String countStr = String(counter, DEC);
-  Serial.println(countStr);
+void smartDelay(unsigned long ms) {
+  unsigned long start = millis();
+  do
+  {
+    while (Serial1.available())
+      gps.encode(Serial1.read());
+  } while (millis() - start < ms);
+}
 
-  // toggle the led to give a visual indication the packet was sent
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(250);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(250);
 
-  counter++;
-  delay(1500);
+void startGPS() {
+  power.power_GPS(true);
+  Serial1.begin(GPSBAUD, SERIAL_8N1, GPSRX, GPSTX);
+  Serial.println("Wake GPS");
+  int data = -1;
+  do {
+    for(int i = 0; i < 20; i++){ //send random to trigger respose
+        Serial1.write(0xFF);
+      }
+    data = Serial1.read();
+  } while(data == -1);
+  Serial.println("GPS is awake");
+}
+
+void stopGPS() {
+  const byte CFG_RST[12] = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00, 0x00, 0x01,0x00, 0x0F, 0x66};//Controlled Software reset
+  const byte RXM_PMREQ[16] = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4d, 0x3b};   //power off until wakeup call
+  Serial1.write(CFG_RST, sizeof(CFG_RST));
+  delay(600); //give some time to restart //TODO wait for ack
+  Serial1.write(RXM_PMREQ, sizeof(RXM_PMREQ));
+  power.power_GPS(false);
+}
+
+GPSLOCK getGpsLock() {
+  for (int i=0; i<config.gps_timeout; i++)
+  {
+    
+    Serial.printf("waiting for GPS try: %d  Age:%u  valid: %d   %d\n", i, gps.location.age(), gps.location.isValid(), gps.time.isValid());
+
+    // check whethe we have  gps sig
+    if (gps.location.lat()!=0 && gps.location.isValid() )
+    {
+      // in the report window?
+      if (gps.time.hour() >=config.fromHour && gps.time.hour() < config.toHour)
+        return LOCK_OK;          
+      else
+        return LOCK_WINDOW;
+    }
+
+    power.flashlight(1);    
+
+    smartDelay(1000);
+  }
+  return LOCK_FAIL;
 }
