@@ -7,7 +7,7 @@
 #include <LoRa.h>
 #include <Wire.h>  
 #include <SSD1306.h>
-#include "images.h"
+#include "../Common/sensor.h"
 
 #define SCK     5    // GPIO5  -- SX1278's SCK
 #define MISO    19   // GPIO19 -- SX1278's MISO
@@ -23,27 +23,48 @@
 #define OLED_RST    16
 
 SSD1306 display(0x3c, OLED_SDA, OLED_SCL);
-String rssi = "RSSI --";
-String packSize = "--";
-String packet ;
 
+void loraData(SensorReport report){
 
-void loraData(){
+  int rssi = LoRa.packetRssi();
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_10);
-  display.drawString(0, 0, rssi); 
-  display.drawStringMaxWidth(0, 12 , 128, packet);
+  display.drawStringMaxWidth(0, 12 , 128, String(report.distance));
+
+  if (rssi>-80)
+    display.fillRect(108,0, 5, 10);
+  else
+    display.drawRect(108,0, 5, 10);
+
+  if (rssi>-100)
+    display.fillRect(115,3, 5, 7);
+  else
+    display.drawRect(115,3, 5, 7);
+
+  if (rssi>-120)
+    display.fillRect(122,7, 5, 3);
+  else
+    display.drawRect(122,7, 5, 3);
+
   display.display();
-  Serial.println(rssi);
 }
 
 void cbk(int packetSize) {
-  packet ="";
-  packSize = String(packetSize,DEC);
-  for (int i = 0; i < packetSize; i++) { packet += (char) LoRa.read(); }
-  rssi = "RSSI " + String(LoRa.packetRssi(), DEC) ;
-  loraData();
+  
+  SensorReport report;
+
+  if (packetSize == sizeof(SensorReport))
+  {
+      unsigned char *ptr = (unsigned char *)&report;
+      for (int i = 0; i < packetSize; i++, ptr++)
+         *ptr = (unsigned char)LoRa.read(); 
+
+      char *stime = asctime(gmtime(&report.time));
+      stime[24]='\0';
+  }
+
+  loraData(report);
 }
 
 void setup() {

@@ -34,25 +34,12 @@ void loop() {
 
 void MakeDataPacket(SensorReport report)
 {
-  uint8_t chipid[6];
-  esp_efuse_read_mac(chipid);
-  char *stime = asctime(gmtime(&report.time));
-  stime[24]='\0';
+  uint8_t[6] id;
+  esp_efuse_read_mac(&report.chipid);
 
   report.distance = GetDistance();
-  report.volts = power.getBatteryVoltage();
+  report.volts = power.get_battery_voltage();
 
-  struct tm curtime;
-  curtime.tm_sec = gps.time.second();
-  curtime.tm_min=gps.time.minute();
-  curtime.tm_hour= gps.time.hour();
-  curtime.tm_mday= gps.date.day();
-  curtime.tm_mon= gps.date.month()-1;
-  curtime.tm_year= gps.date.year()-1900;
-  curtime.tm_isdst=false;
-
-  Serial.printf("%s %f/%f alt=%f sats=%d hdop=%d dis=%f v=%f\n",
-  stime, report.lat, report.lng ,report.alt , +report.sats , +report.hdop ,report.distance, report.volts );
 }
 
 double GetDistance() {
