@@ -17,27 +17,33 @@ void setup() {
 
   power.begin();
   power.power_sensors(false);
-  power.power_peripherals(false);
+  power.power_peripherals(true);
 
   startLoRa();
-  startGPS();
+  //startGPS();
 }
 
 void loop() {
   SensorReport report;
   
-  MakeDataPacket(report);
-  SendLora(report);
+  MakeDataPacket(&report);
+  
+  SendLora(&report);
 
-  smartDelay(1000);
+  delay(1000);
 }
 
-void MakeDataPacket(SensorReport report)
+void MakeDataPacket(SensorReport *report)
 {
-  esp_efuse_read_mac(report.chipid);
+    Serial.printf("Get Id\n");
 
-  report.distance = GetDistance();
-  report.volts = power.get_battery_voltage();
+  esp_efuse_read_mac(report->chipid);
+
+  report->distance = GetDistance();
+  Serial.printf("Get distance %f\n",report->distance);
+
+  Serial.printf("Get Voltage\n");
+  report->volts = power.get_battery_voltage();
 
 }
 
@@ -65,8 +71,11 @@ void stopLoRa()
 }
 
 void startLoRa() {
+  Serial.begin(115200);
+  while (!Serial);
+
   power.power_LoRa(true);
-  Serial.printf("Starting Lora: freq:%lu enableCRC:%d coderate:%d spread:%d bandwidth:%lu txpower:%d\n", config.frequency, config.enableCRC, config.codingRate, config.spreadFactor, config.bandwidth, config.txpower);
+  Serial.printf("\nStarting Lora: freq:%lu enableCRC:%d coderate:%d spread:%d bandwidth:%lu txpower:%d\n", config.frequency, config.enableCRC, config.codingRate, config.spreadFactor, config.bandwidth, config.txpower);
 
   SPI.begin(SCK,MISO,MOSI,SS);
   LoRa.setPins(SS,RST,DI0);
@@ -95,10 +104,11 @@ void startLoRa() {
   }  
 }
 
-void SendLora( SensorReport report ) {
+void SendLora( SensorReport* report ) {
+  Serial.printf("Sending packet = d=%f\n",report->distance);
   power.led_onoff(true);
   LoRa.beginPacket();
-  LoRa.write( (const uint8_t *)&report, sizeof(SensorReport));
+  LoRa.write( (const uint8_t *)report, sizeof(SensorReport));
   LoRa.endPacket();
   power.led_onoff(false);
 }

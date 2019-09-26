@@ -7,7 +7,7 @@
 #include <LoRa.h>
 #include <Wire.h>  
 #include <SSD1306.h>
-#include "../Common/sensor.h"
+#include "main.h"
 
 #define SCK     5    // GPIO5  -- SX1278's SCK
 #define MISO    19   // GPIO19 -- SX1278's MISO
@@ -23,6 +23,8 @@
 
 SSD1306 display(0x3c, OLED_SDA, OLED_SCL);
 
+struct SensorConfig config;
+
 void loraData(SensorReport report){
 
   int rssi = LoRa.packetRssi();
@@ -31,10 +33,10 @@ void loraData(SensorReport report){
   display.setFont(ArialMT_Plain_10);
 
   char buf[32];
-  sprintf(buf, "%02x%02x%02x%02x%02x%02x", report.chipid);
+  sprintf(buf, "%02x%02x%02x%02x", report.chipid[2], report.chipid[3], report.chipid[4], report.chipid[5]);
   display.drawStringMaxWidth(0, 0, 128, buf);
 
-  display.setFont(ArialMT_Plain_16);
+  display.setFont(ArialMT_Plain_24);
   display.drawStringMaxWidth(0, 16, 128, String(report.distance));
 
   if (rssi>-80)
@@ -58,6 +60,7 @@ void loraData(SensorReport report){
 void cbk(int packetSize) {
   
   SensorReport report;
+  Serial.println("got packet");
 
   if (packetSize == sizeof(SensorReport))
   {
@@ -67,9 +70,9 @@ void cbk(int packetSize) {
 
       char *stime = asctime(gmtime(&report.time));
       stime[24]='\0';
+      Serial.printf("distance=%f\n",report.distance);
+      loraData(report);
   }
-
-  loraData(report);
 }
 
 void setup() {
@@ -80,20 +83,19 @@ void setup() {
   
   Serial.begin(115200);
   while (!Serial);
-  Serial.println();
-  Serial.println("LoRa Receiver Callback");
-  SPI.begin(SCK,MISO,MOSI,SS);
-  LoRa.setPins(SS,RST,DI0);  
-  if (!LoRa.begin(868E6)) {
-    Serial.println("Starting LoRa failed!");
-    while (1);
-  }
-  //LoRa.onReceive(cbk);
+  
+  startLoRa();
+
   LoRa.receive();
-  Serial.println("init ok");
+  Serial.println("init screen");
   display.init();
   display.flipScreenVertically();  
-  display.setFont(ArialMT_Plain_10);
+  display.clear();
+  display.setFont(ArialMT_Plain_24);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.drawStringMaxWidth(0, 0, 128, "Waiting");
+  display.display();
+  Serial.println("init ok");
    
   delay(1500);
 }
@@ -102,4 +104,35 @@ void loop() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) { cbk(packetSize);  }
   delay(10);
+}
+
+
+void startLoRa() {
+  Serial.printf("\nStarting Lora: freq:%lu enableCRC:%d coderate:%d spread:%d bandwidth:%lu txpower:%d\n", config.frequency, config.enableCRC, config.codingRate, config.spreadFactor, config.bandwidth, config.txpower);
+
+  SPI.begin(SCK,MISO,MOSI,SS);
+  LoRa.setPins(SS,RST,DI0);
+
+  int result = LoRa.begin(config.frequency);
+  if (!result) 
+    Serial.printf("Starting LoRa failed: err %d\n", result);
+  else
+    Serial.println("Started LoRa OK");
+
+  LoRa.setPreambleLength(config.preamble);
+  LoRa.setSyncWord(config.syncword);    
+  LoRa.setSignalBandwidth(config.bandwidth);
+  LoRa.setSpreadingFactor(config.spreadFactor);
+  LoRa.setCodingRate4(config.codingRate);
+  if (config.enableCRC)
+      LoRa.enableCrc();
+    else 
+      LoRa.disableCrc();
+
+  LoRa.setTxPower(config.txpower);
+  LoRa.idle();
+  
+  if (!result) {
+    Serial.printf("Starting LoRa failed: err %d", result);
+  }  
 }

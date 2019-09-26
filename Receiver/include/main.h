@@ -3,14 +3,6 @@
 
 #include "../Common/sensor.h"
 
-#define TRIGPIN      13
-#define ECHOPIN      2
-
-#define BATTERY_PIN  35   // battery level measurement pin, here is the voltage divider connected
-#define BUSPWR       4    // GPIO04 -- sensor bus power control
-#define PWRSDA       21
-#define PWRSCL       22
-
 #define SCK          5    // GPIO5  -- SX1278's SCK
 #define MISO         19   // GPIO19 -- SX1278's MISO
 #define MOSI         27   // GPIO27 -- SX1278's MOSI
@@ -26,10 +18,6 @@
 #define PREAMBLE      8
 #define TXPOWER      20   // max transmit power
 #define MINBATVOLTS 2.7   // minimum voltage on battery - if lower, device goes to deep sleep to recharge
-
-#define GPSRX        34   
-#define GPSTX        12   
-#define GPSBAUD      9600
 
 struct SensorConfig
 {
@@ -59,14 +47,9 @@ enum GPSLOCK
     LOCK_WINDOW
 };
 
+void MakeDataPacket(SensorReport report);
 double GetDistance();
-void stopLoRa();
 void startLoRa();
-void MakeDataPacket(SensorReport* report);
-void SendLora(SensorReport* report);
-void smartDelay(unsigned long ms);
-GPSLOCK getGpsLock();
-void stopGPS();
-void startGPS();
+void SendLora(SensorReport report);
 
 #endif
