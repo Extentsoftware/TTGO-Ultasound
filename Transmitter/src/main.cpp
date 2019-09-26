@@ -34,8 +34,7 @@ void loop() {
 
 void MakeDataPacket(SensorReport report)
 {
-  uint8_t[6] id;
-  esp_efuse_read_mac(&report.chipid);
+  esp_efuse_read_mac(report.chipid);
 
   report.distance = GetDistance();
   report.volts = power.get_battery_voltage();

@@ -17,7 +17,6 @@
 #define DI0     26   // GPIO26 -- SX1278's IRQ(Interrupt Request)
 #define BAND    868E6
 
-
 #define OLED_SDA    4
 #define OLED_SCL    15
 #define OLED_RST    16
@@ -30,7 +29,13 @@ void loraData(SensorReport report){
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_10);
-  display.drawStringMaxWidth(0, 12 , 128, String(report.distance));
+
+  char buf[32];
+  sprintf(buf, "%02x%02x%02x%02x%02x%02x", report.chipid);
+  display.drawStringMaxWidth(0, 0, 128, buf);
+
+  display.setFont(ArialMT_Plain_16);
+  display.drawStringMaxWidth(0, 16, 128, String(report.distance));
 
   if (rssi>-80)
     display.fillRect(108,0, 5, 10);
