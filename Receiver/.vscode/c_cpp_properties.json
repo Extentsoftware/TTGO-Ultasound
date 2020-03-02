@@ -6,13 +6,15 @@
         {
             "name": "Win32",
             "includePath": [
-                "e:/data/TTGO-Ultasound/Receiver/include",
-                "e:/data/TTGO-Ultasound/Receiver/src",
-                "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/ESP8266_SSD1306_ID562/src",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/include",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/src",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/TinyGSM_ID1287/src",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/PubSubClient_ID89/src",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/ESP8266_SSD1306_ID562/src",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/Marcus/.platformio/lib/LoRa_ID1167/src",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
-                "e:/data/TTGO-Ultasound/common",
+                "e:/data/Bongo/TTGO-Ultasound/common",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -71,8 +73,8 @@
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/fb_gfx",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                 "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v1",
-                "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/DisplayCore_ID1024",
-                "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/SSD1306_ID1134",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/DisplayCore_ID1024",
+                "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/SSD1306_ID1134",
                 "C:/Users/Marcus/.platformio/lib/Adafruit Unified Sensor_ID31",
                 "C:/Users/Marcus/.platformio/lib/ArduinoJson_ID64/src",
                 "C:/Users/Marcus/.platformio/lib/AsyncTCP_ID1826/src",
@@ -113,13 +115,15 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "e:/data/TTGO-Ultasound/Receiver/include",
-                    "e:/data/TTGO-Ultasound/Receiver/src",
-                    "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/ESP8266_SSD1306_ID562/src",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/include",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/src",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/TinyGSM_ID1287/src",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/PubSubClient_ID89/src",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/ESP8266_SSD1306_ID562/src",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/Marcus/.platformio/lib/LoRa_ID1167/src",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
-                    "e:/data/TTGO-Ultasound/common",
+                    "e:/data/Bongo/TTGO-Ultasound/common",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -178,8 +182,8 @@
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/fb_gfx",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                     "C:/Users/Marcus/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v1",
-                    "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/DisplayCore_ID1024",
-                    "e:/data/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/SSD1306_ID1134",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/DisplayCore_ID1024",
+                    "e:/data/Bongo/TTGO-Ultasound/Receiver/.pio/libdeps/ttgo-esp32/SSD1306_ID1134",
                     "C:/Users/Marcus/.platformio/lib/Adafruit Unified Sensor_ID31",
                     "C:/Users/Marcus/.platformio/lib/ArduinoJson_ID64/src",
                     "C:/Users/Marcus/.platformio/lib/AsyncTCP_ID1826/src",
@@ -219,7 +223,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=40100",
+                "PLATFORMIO=40201",
                 "ARDUINO_TTGO_LoRa32_V1",
                 "DEBUG",
                 "ESP32",
@@ -236,7 +240,11 @@
             "intelliSenseMode": "clang-x64",
             "cStandard": "c99",
             "cppStandard": "c++11",
-            "compilerPath": "\"C:/Users/Marcus/.platformio/packages/toolchain-xtensa32/bin/xtensa-esp32-elf-gcc.exe\" -mlongcalls"
+            "compilerPath": "C:/Users/Marcus/.platformio/packages/toolchain-xtensa32/bin/xtensa-esp32-elf-gcc.exe",
+            "compilerArgs": [
+                "-mlongcalls",
+                ""
+            ]
         }
     ],
     "version": 4
