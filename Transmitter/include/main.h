@@ -6,10 +6,14 @@
 #define TRIGPIN      13
 #define ECHOPIN      2
 
-#define BATTERY_PIN  35   // battery level measurement pin, here is the voltage divider connected
+
+//#define BATTERY_PIN  35   // battery level measurement pin, here is the voltage divider connected
+#define BATTERY_PIN  -1   // battery level measurement pin, here is the voltage divider connected
+
 #define BUSPWR       4    // GPIO04 -- sensor bus power control
 #define PWRSDA       21
 #define PWRSCL       22
+#define ADC_ADDR  0x48    // Base address of ADS1115
 
 #define SCK          5    // GPIO5  -- SX1278's SCK
 #define MISO         19   // GPIO19 -- SX1278's MISO

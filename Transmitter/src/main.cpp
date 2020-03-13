@@ -7,13 +7,22 @@
 #include "TinyGPS.h"
 #include "main.h"
 
-TBeamPower power(BUSPWR, BATTERY_PIN,PWRSDA,PWRSCL);
+TBeamPower power( PWRSDA, PWRSCL, BATTERY_PIN, BUSPWR);
+
 TinyGPSPlus gps;                            
 struct SensorConfig config;
 
+void setupSerial() { 
+  Serial.begin(115200);
+  while (!Serial);
+  Serial.println();
+  Serial.println("VESTRONG LaPoulton Ultrasound Sensor");
+}
+
+
 void setup() {
   // Begin Serial communication at a baudrate of 9600:
-  Serial.begin(115200);
+  setupSerial();
 
   power.begin();
   power.power_sensors(false);
