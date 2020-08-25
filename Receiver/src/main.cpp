@@ -202,6 +202,7 @@ bool doConnectMQTT()
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", array[0], array[1], array[2], array[3], array[4], array[5]);
   mqtt.setServer(broker, 1883);
   mqtt.setCallback(mqttCallback);
+  
   boolean status = mqtt.connect(macStr);
   SetSimpleMsg((char*)(status ? Msg_MQTTConnectOk : Msg_MQTTConnectFailed));
 
@@ -227,8 +228,9 @@ void loop() {
 
     case LoraStart:
       startLoRa();
-      LoRa.receive();
+      
       startupStage = Ready;
+
 #ifdef HAS_OLED
       display.clear();
       display.setFont(ArialMT_Plain_24);
@@ -237,9 +239,9 @@ void loop() {
       display.display();
 #endif
     case Ready:
-      int packetSize = LoRa.parsePacket();
-      if (packetSize) { cbk(packetSize);  }
-      delay(10);
+        int packetSize = LoRa.parsePacket();
+        if (packetSize) { cbk(packetSize);  }
+        delay(100);
   }
 }
 
@@ -267,10 +269,7 @@ void startLoRa() {
 
   LoRa.setTxPower(config.txpower);
   LoRa.idle();
-  
-  if (!result) {
-    SerialMon.printf("Starting LoRa failed: err %d", result);
-  }  
+  LoRa.receive();
 }
 
 // incoming message

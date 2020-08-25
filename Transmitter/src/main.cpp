@@ -39,14 +39,14 @@ void loop() {
   
   SendLora(&report);
 
-  delay(1000);
+  delay(10000);
 }
 
 void MakeDataPacket(SensorReport *report)
 {
     Serial.printf("Get Id\n");
 
-  esp_efuse_read_mac(report->chipid);
+  esp_efuse_mac_get_default(report->chipid);
 
   report->distance = GetDistance();
   Serial.printf("Get distance %f\n",report->distance);
